@@ -31,6 +31,22 @@ Copy env templates from **`.env.example`** into `server/.env` and `client/.env` 
 
 If waitlist or signup fails, use **browser DevTools → Network** on the failing request. The **server** terminal should show `Server on port 5000` with no crash.
 
+## Local vs Vercel (this is not a Git problem)
+
+If **`npm run dev` works locally** but production feels broken, the commits and GitHub are almost certainly fine: Vercel builds **the same `main` branch** you have locally.
+
+What changes is **what runs in each place**:
+
+| | Local (`npm run dev`) | Vercel |
+|---|------------------------|--------|
+| Frontend | Vite on **:5173** | Static files from **`client/dist`** only |
+| API | Express on **:5000** | **Not started** — there is no Node server in this deploy |
+| `/api` and `/socket.io` | Vite **proxy** forwards to :5000 | **No proxy** — the browser calls whatever host the page is on unless you set env vars |
+
+So issues on Vercel are usually **configuration** (env vars, project root, or dashboard overrides), not “bad Git.”
+
+**In Vercel → Project → Settings → General:** if **Build & Development Settings** has custom **Install**, **Build**, or **Output** commands, those **override** the root **`vercel.json`**. Either remove the overrides so the repo config applies, or make them match: install from `creatorbrand`, build `npm run build -w client`, output `creatorbrand/client/dist`.
+
 ## Deploy on Vercel (frontend)
 
 The repo root has **no** `package.json` (the app lives under `creatorbrand/` only). Configure Vercel in one of these ways:

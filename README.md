@@ -6,6 +6,6 @@ This repository contains the **CreatorBrand** app: landing page with **waitlist*
 
 **How to run:** `cd creatorbrand` and follow `creatorbrand/README.md`.
 
-**Vercel:** the repo includes a root **`vercel.json`** so deployments can use the repository root without a root `package.json`. See **Deploy on Vercel** in `creatorbrand/README.md`.
+**Vercel:** the repo includes a root **`vercel.json`**. Local dev runs the API + Vite proxy; Vercel only serves the built frontend unless you configure env vars and a separate API host — see **Local vs Vercel** and **Deploy on Vercel** in `creatorbrand/README.md`.
 
 There is **no cryptocurrency or “Stacks wallet” code** in this project. If you ever saw `StacksProvider` or `chrome-extension://…` errors, that came from a **browser extension** injected into every site you visit, not from anything installed via `package.json` here.

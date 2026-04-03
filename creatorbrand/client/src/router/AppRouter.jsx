@@ -21,7 +21,7 @@ import Settings from '../pages/shared/Settings'
 
 function ProtectedRoute({ children, role }) {
   const { user } = useAuthStore()
-  if (!user) return <Navigate to="/login" replace />
+  if (!user || typeof user !== 'object') return <Navigate to="/login" replace />
   if (role && user.role !== role) return <Navigate to="/" replace />
   return children
 }
@@ -33,12 +33,7 @@ export default function AppRouter() {
   }, [fetchMe])
 
   return (
-    <BrowserRouter
-      future={{
-        v7_startTransition: true,
-        v7_relativeSplatPath: true
-      }}
-    >
+    <BrowserRouter>
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/signup" element={<Signup />} />

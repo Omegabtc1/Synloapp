@@ -3,5 +3,10 @@
   "installCommand": "cd creatorbrand && npm install",
   "buildCommand": "cd creatorbrand && npm run build -w client",
   "outputDirectory": "creatorbrand/client/dist",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    {
+      "source": "/((?!assets/|socket\\.io).*)",
+      "destination": "/index.html"
+    }
+  ]
 }

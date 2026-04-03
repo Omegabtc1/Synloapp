@@ -1,0 +1,17 @@
+{
+  "name": "creatorbrand",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "predev": "npx --yes kill-port 5000 5173 || exit 0",
+    "dev": "concurrently \"npm run dev -w server\" \"npm run dev -w client\"",
+    "seed": "npm run seed -w server"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "kill-port": "^2.0.1"
+  }
+}

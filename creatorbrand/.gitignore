@@ -1,0 +1,10 @@
+node_modules
+dist
+build
+.env
+.next
+*.log
+
+# Local SQLite (run migrations / prisma db push on each machine)
+**/prisma/*.db
+**/prisma/*.db-journal

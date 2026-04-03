@@ -1,0 +1,136 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         String   @default("CREATOR")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  creator      Creator?
+  brand        Brand?
+  @@map("users")
+}
+
+model Creator {
+  id                 String              @id @default(cuid())
+  userId             String              @unique
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  username           String              @unique
+  displayName        String
+  bio                String              @default("")
+  avatarSeed         String              @default("")
+  location           String              @default("")
+  niche              String              @default("[]")
+  isSimulated        Boolean             @default(false)
+  instagramFollowers Int                 @default(0)
+  tiktokFollowers    Int                 @default(0)
+  youtubeSubscribers Int                 @default(0)
+  twitterFollowers   Int                 @default(0)
+  avgEngagementRate  Float               @default(0.0)
+  createdAt          DateTime            @default(now())
+  snapshots          AnalyticsSnapshot[]
+  collaborations     Collaboration[]
+  applications       CampaignApplication[]
+  @@map("creators")
+}
+
+model Brand {
+  id             String          @id @default(cuid())
+  userId         String          @unique
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name           String
+  bio            String          @default("")
+  logoSeed       String          @default("")
+  website        String          @default("")
+  industry       String          @default("")
+  isSimulated    Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  campaigns      Campaign[]
+  collaborations Collaboration[]
+  @@map("brands")
+}
+
+model Campaign {
+  id           String               @id @default(cuid())
+  brandId      String
+  brand        Brand                @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  title        String
+  description  String
+  budget       Float
+  budgetType   String               @default("FIXED")
+  niche        String               @default("[]")
+  platforms    String               @default("[]")
+  deliverables String               @default("")
+  status       String               @default("DRAFT")
+  deadline     DateTime?
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  applications CampaignApplication[]
+  collaborations Collaboration[]
+  @@map("campaigns")
+}
+
+model CampaignApplication {
+  id         String   @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  creatorId  String
+  creator    Creator  @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  message    String   @default("")
+  status     String   @default("PENDING")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  @@unique([campaignId, creatorId])
+  @@map("campaign_applications")
+}
+
+model Collaboration {
+  id         String   @id @default(cuid())
+  brandId    String
+  brand      Brand    @relation(fields: [brandId], references: [id])
+  creatorId  String
+  creator    Creator  @relation(fields: [creatorId], references: [id])
+  campaignId String?
+  campaign   Campaign? @relation(fields: [campaignId], references: [id])
+  status     String   @default("PENDING")
+  message    String   @default("")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  @@map("collaborations")
+}
+
+model AnalyticsSnapshot {
+  id              String   @id @default(cuid())
+  creatorId       String
+  creator         Creator  @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  snapshotDate    DateTime @default(now())
+  platform        String
+  followers       Int
+  followingCount  Int
+  postsCount      Int
+  avgLikes        Int
+  avgComments     Int
+  avgShares       Int
+  engagementRate  Float
+  estimatedReach  Int
+  profileViews    Int
+  @@map("analytics_snapshots")
+}
+
+model WaitlistEntry {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  role      String
+  createdAt DateTime @default(now())
+  @@map("waitlist_entries")
+}
+

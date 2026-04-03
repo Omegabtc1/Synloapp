@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { useSocket } from '../hooks/useSocket'
 import { useWaitlistStore } from '../stores/waitlistStore'
 
 function AnimatedNumber({ value }) {
@@ -28,16 +27,60 @@ function AnimatedNumber({ value }) {
   return <span>{display.toLocaleString()}</span>
 }
 
+function shouldSkipSocketInProd(configured) {
+  if (!import.meta.env.PROD) return false
+  if (!configured) return true
+  try {
+    const page = window.location.origin
+    const target = new URL(configured, page).origin
+    if (target === page) return true
+  } catch {
+    return true
+  }
+  return false
+}
+
 export default function LiveCounter() {
   const { creators, brands, fetchCounts, setFromSocket } = useWaitlistStore()
-  const socket = useSocket()
 
   useEffect(() => {
     fetchCounts()
-    socket.emit('waitlist:subscribe')
-    socket.on('waitlist:update', setFromSocket)
-    return () => socket.off('waitlist:update', setFromSocket)
-  }, [fetchCounts, socket, setFromSocket])
+
+    const configured = (import.meta.env.VITE_SOCKET_URL || '').trim()
+    if (shouldSkipSocketInProd(configured)) {
+      return undefined
+    }
+
+    let cancelled = false
+    let socket = null
+
+    const run = async () => {
+      try {
+        const { io } = await import('socket.io-client')
+        if (cancelled) return
+        const url = configured || window.location.origin
+        socket = io(url, {
+          path: '/socket.io',
+          withCredentials: true,
+          autoConnect: true
+        })
+        socket.emit('waitlist:subscribe')
+        socket.on('waitlist:update', setFromSocket)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+
+    run()
+
+    return () => {
+      cancelled = true
+      if (socket) {
+        socket.off('waitlist:update', setFromSocket)
+        socket.disconnect()
+      }
+    }
+  }, [fetchCounts, setFromSocket])
 
   return (
     <div className="flex flex-col sm:flex-row items-center gap-6 justify-center my-8">
@@ -63,4 +106,3 @@ export default function LiveCounter() {
     </div>
   )
 }
-

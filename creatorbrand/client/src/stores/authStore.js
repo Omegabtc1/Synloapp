@@ -1,6 +1,30 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import api from '../services/api'
+
+const safeStorage = createJSONStorage(() => ({
+  getItem: (name) => {
+    try {
+      return localStorage.getItem(name)
+    } catch {
+      return null
+    }
+  },
+  setItem: (name, value) => {
+    try {
+      localStorage.setItem(name, value)
+    } catch {
+      /* quota / private mode */
+    }
+  },
+  removeItem: (name) => {
+    try {
+      localStorage.removeItem(name)
+    } catch {
+      /* noop */
+    }
+  }
+}))
 
 export const useAuthStore = create(
   persist(
@@ -42,7 +66,7 @@ export const useAuthStore = create(
       fetchMe: async () => {
         try {
           const res = await api.get('/api/auth/me')
-          set({ user: res.data.user, profile: res.data.profile })
+          set({ user: res.data?.user ?? null, profile: res.data?.profile ?? null })
         } catch {
           set({ user: null, profile: null })
         }
@@ -50,7 +74,7 @@ export const useAuthStore = create(
 
       clearError: () => set({ error: null })
     }),
-    { name: 'auth-storage' }
+    { name: 'auth-storage', storage: safeStorage }
   )
 )
 

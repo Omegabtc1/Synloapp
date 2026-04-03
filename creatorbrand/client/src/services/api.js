@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // In dev, leave VITE_API_URL empty in `.env` so requests use the Vite proxy (same origin as the UI).
 // That avoids cookie/CORS quirks and still works when the API runs on :5000 behind the proxy.
-const baseURL = (import.meta.env.VITE_API_URL || '').trim() || ''
+const baseURL = "/"
 
 const api = axios.create({
   baseURL,

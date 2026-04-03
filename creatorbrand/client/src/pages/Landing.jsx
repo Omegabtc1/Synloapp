@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import LiveCounter from '../components/LiveCounter'
 import { useWaitlistStore } from '../stores/waitlistStore'
@@ -16,10 +16,17 @@ const FEATURES_BRAND = [
 ]
 
 export default function Landing() {
+  // Vite SPA is client-rendered only (no Next.js SSR/hydration). This still defers heavy UI
+  // until after mount so any browser-only timing (extensions, storage) runs on the client first.
+  const [mounted, setMounted] = useState(false)
   const [form, setForm] = useState({ name: '', email: '', role: 'CREATOR' })
   const [submitted, setSubmitted] = useState(false)
   const [formError, setFormError] = useState('')
   const { join, isLoading } = useWaitlistStore()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   async function handleWaitlist(e) {
     e.preventDefault()
@@ -31,6 +38,10 @@ export default function Landing() {
       const apiMsg = err.response?.data?.error
       setFormError(apiMsg || err.message || 'Something went wrong. Please try again.')
     }
+  }
+
+  if (!mounted) {
+    return <div className="min-h-screen bg-white" aria-hidden />
   }
 
   return (
